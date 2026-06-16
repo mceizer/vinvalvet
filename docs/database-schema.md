@@ -106,7 +106,7 @@ Varje dokument i `wines` representerar ett vin eller en produktpost.
 
 | alcoholPercentage | number/null | Alkoholhalt |
 
-| sugar | number/null | Sockerhalt i gram per 100ml |
+| sugar | number/null | Sockerhalt i g/l |
 
 | volumeMl | number/null | Volym i ml |
 
