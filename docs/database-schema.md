@@ -1,193 +1,135 @@
-\# Vinvalvet Database Schema
+# Vinvalvet Database Schema
 
+## Syfte
 
+Detta dokument beskriver datamodellen för Vinvalvets egen vin- och produktdatabas.
 
-Detta dokument beskriver den planerade datamodellen för Vinvalvets egen vin- och produktdatabas.
+Målet är att Vinvalvet ska använda en egen kontrollerad datakälla för:
 
+- sökning
+- OCR-matchning
+- QR-flöden
+- framtida AI-matchning
+- minskat beroende av externa tjänster
 
+## Arkitektur
 
-Syftet är att Vinvalvet ska kunna använda en egen kontrollerad datakälla för:
+Datakälla
 
-\- sökning
+↓
 
-\- OCR-matchning
+Import
 
-\- QR-flöde
+↓
 
-\- framtida AI-matchning
+JSON / ZIP
 
-\- minskat beroende av externa tjänster
+↓
 
+Vinvalvet App
 
+↓
 
-\## Collection: wines
+Isar
 
+Vinindexet distribueras som versionshanterade JSON- eller ZIP-filer och lagras lokalt i Isar på användarens enhet.
 
+Sökning, OCR-matchning och QR-matchning ska i första hand ske lokalt för hög prestanda, låg driftkostnad och stöd för offline-användning.
 
-Varje dokument i `wines` representerar ett vin eller en produktpost.
+## Datamodell: wines
 
+Varje dokument i `wines` representerar ett vin eller en produktpost i Vinvalvets centrala vinindex.
 
+---
 
-\---
-
-
-
-\## Obligatoriska fält
-
-
+## Obligatoriska fält
 
 | Fält | Typ | Beskrivning |
-
 |---|---|---|
-
 | id | string | Internt unikt ID i Vinvalvet |
-
 | productId | string | Produkt-ID från ursprunglig datakälla om tillgängligt |
-
 | name | string | Vinets namn |
-
-| wineType | string | Typ av vin, t.ex. red, white, sparkling, rose |
-
+| wineType | string | Typ av vin, exempelvis red, white, sparkling eller rose |
 | searchTokens | array<string> | Sökbara ord för namn, producent, land, region och alias |
-
 | updatedAt | timestamp | Senaste uppdatering av posten |
 
+---
 
-
-\---
-
-
-
-\## Rekommenderade fält
-
-
+## Rekommenderade fält
 
 | Fält | Typ | Beskrivning |
-
 |---|---|---|
-
 | producer | string | Producent |
-
 | country | string | Land |
-
 | region | string | Region |
-
 | vintage | number/null | Årgång om känd |
-
 | grapes | array<string> | Druvor |
-
 | aliases | array<string> | Alternativa namn och vanliga sökningar |
+| source | string | Ursprungsdatakälla |
+| sourceUrl | string/null | Länk till källa om tillgänglig |
 
-| source | string | Var datan kommer från |
+---
 
-| sourceUrl | string/null | Länk till källa om tillgängligt |
-
-
-
-\---
-
-
-
-\## Valfria fält
-
-
+## Valfria fält
 
 | Fält | Typ | Beskrivning |
-
 |---|---|---|
-
 | qrUrls | array<string> | QR-länkar som kan kopplas till vinet |
-
 | imageUrl | string/null | Bild på flaska eller etikett |
-
-| labelImageUrl | string/null | Bild särskilt av etikett |
-
-| ocrKeywords | array<string> | Ord som hjälper OCR-matchning |
-
-| alcoholPercentage | number/null | Alkoholhalt |
-
-| sugar | number/null | Sockerhalt i g/l |
-
-| volumeMl | number/null | Volym i ml |
-
-| priceSek | number/null | Pris i SEK |
-
+| labelImageUrl | string/null | Bild av etiketten |
+| ocrKeywords | array<string> | Nyckelord som hjälper OCR-matchning |
+| alcoholPercentage | number/null | Alkoholhalt i procent |
+| sugar | number/null | Sockerhalt i gram per liter (g/l) |
+| volumeMl | number/null | Volym i milliliter |
+| priceSek | number/null | Pris i svenska kronor |
 | systembolagetUrl | string/null | Länk till Systembolaget om sådan finns |
 
+---
 
-
-\---
-
-
-
-\## Framtida AI-fält
-
-
+## Framtida AI-fält
 
 | Fält | Typ | Beskrivning |
-
 |---|---|---|
-
-| embedding | array<number>/null | Framtida vektor för AI-matchning |
-
+| embedding | array<number>/null | Vektor för framtida AI-matchning |
 | aiDescription | string/null | AI-genererad sammanfattning |
-
 | labelRecognitionHints | array<string> | Hjälpord för bildigenkänning |
 
+---
 
-
-\---
-
-
-
-\## Exempel
-
-
+## Exempelobjekt
 
 ```json
-
 {
-
-&#x20; "id": "vinvalvet\_000001",
-
-&#x20; "productId": "12345",
-
-&#x20; "name": "Naltros Cava Brut",
-
-&#x20; "producer": "Naltros",
-
-&#x20; "country": "Spain",
-
-&#x20; "region": "Cava",
-
-&#x20; "wineType": "sparkling",
-
-&#x20; "vintage": null,
-
-&#x20; "grapes": \["Macabeo", "Xarel-lo", "Parellada"],
-
-&#x20; "aliases": \["Naltros Cava", "Naltros Brut"],
-
-&#x20; "searchTokens": \[
-
-&#x20;   "naltros",
-
-&#x20;   "cava",
-
-&#x20;   "brut",
-
-&#x20;   "spain",
-
-&#x20;   "sparkling"
-
-&#x20; ],
-
-&#x20; "qrUrls": \[],
-
-&#x20; "source": "vinvalvet",
-
-&#x20; "sourceUrl": null,
-
-&#x20; "updatedAt": "2026-06-16T00:00:00Z"
-
+  "id": "vinvalvet_000001",
+  "productId": "12345",
+  "name": "Naltros Cava Brut",
+  "producer": "Naltros",
+  "country": "Spain",
+  "region": "Cava",
+  "wineType": "sparkling",
+  "vintage": null,
+  "grapes": ["Macabeo", "Xarel-lo", "Parellada"],
+  "aliases": ["Naltros Cava", "Naltros Brut"],
+  "searchTokens": [
+    "naltros",
+    "cava",
+    "brut",
+    "spain",
+    "sparkling"
+  ],
+  "qrUrls": [],
+  "source": "vinvalvet",
+  "sourceUrl": null,
+  "updatedAt": "2026-06-16T00:00:00Z"
 }
+```
+
+## Regler
+
+- `name`, `wineType`, `searchTokens` och `updatedAt` ska alltid finnas.
+- `grapes`, `aliases`, `qrUrls` och `ocrKeywords` ska vara tomma listor om information saknas.
+- Okända textfält bör vara `null` eller tom sträng beroende på framtida importstrategi.
+- Årgång ska lagras som `number` när den är känd, annars `null`.
+- Sökning i appen ska i första hand baseras på `searchTokens`.
+- Vinindexet ska distribueras centralt men användas lokalt via Isar.
+- Firestore ska inte användas som primär sökmotor för vinindexet.
